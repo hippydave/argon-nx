@@ -17,28 +17,44 @@
 
 #include "menu/gui/gui_menu.h"
 #include "menu/gui/gui_menu_pool.h"
+
+#include "utils/touch.h"
 #include "utils/btn.h"
+
 #include "gfx/gfx.h"
+
 #include "mem/heap.h"
+
+#include "core/custom-gui.h"
+
 #include <string.h>
 
-bool g_force_render = true;
+#define MINOR_VERSION 3
+#define MAJOR_VERSION 0
+
 
 /* Render the menu */
-void gui_menu_draw(gui_menu_t *menu);
+static void gui_menu_render_menu(gui_menu_t*);
+static void gui_menu_draw_background(gui_menu_t*);
+static void gui_menu_draw_entries(gui_menu_t*);
 
 /* Update menu after an input */
-int gui_menu_update(gui_menu_t *menu);
+static int gui_menu_update(gui_menu_t*);
+
+/* Handle input */
+static int handle_touch_input(gui_menu_t*);
 
 gui_menu_t *gui_menu_create(const char *title)
 {
 	gui_menu_t *menu = (gui_menu_t *)malloc(sizeof(gui_menu_t));
+    menu->custom_gui = custom_gui_load();
 	strcpy(menu->title, title);
 	menu->next_entry = 0;
 	menu->selected_index = 0;
     gui_menu_push_to_pool((void*)menu);
 	return menu;
 }
+
 
 void gui_menu_append_entry(gui_menu_t *menu, gui_menu_entry_t *menu_entry)
 {
@@ -49,51 +65,59 @@ void gui_menu_append_entry(gui_menu_t *menu, gui_menu_entry_t *menu_entry)
 	menu->next_entry++;
 }
 
-void gui_menu_draw(gui_menu_t *menu)
+static void gui_menu_draw_background(gui_menu_t* menu)
+{
+    if(!render_custom_background(menu->custom_gui))
+        gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
+    
+    /* Render title */
+    if (!render_custom_title(menu->custom_gui)) 
+    {
+        g_gfx_con.scale = 4;
+        gfx_con_setpos(&g_gfx_con, 480, 20);
+        gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
+    }
+}
+
+static void gui_menu_render_menu(gui_menu_t* menu) 
+{
+    gui_menu_draw_background(menu);
+    gui_menu_draw_entries(menu);
+    gfx_swap_buffer(&g_gfx_ctxt);
+}
+
+static void gui_menu_draw_entries(gui_menu_t *menu)
 {
     for (s16 i = 0; i < menu->next_entry; i++)
-	{
-        gui_menu_render_entry(menu->entries[i], i == menu->selected_index, g_force_render);
-	}
-    g_force_render = false;
+        gui_menu_render_entry(menu->entries[i]);
 }
 
 
-int gui_menu_update(gui_menu_t *menu)
+static int gui_menu_update(gui_menu_t *menu)
 {
-	gui_menu_entry_t *entry = NULL;
-	u32 input;
+    u32 res = 0;
 
-    gui_menu_draw(menu);
+    gui_menu_draw_background(menu);
+    gui_menu_draw_entries(menu);
 
-    input = btn_wait();
+    res = handle_touch_input(menu);
 
-	if ((input & BTN_VOL_DOWN) && menu->selected_index > 0)
-	{
-		menu->selected_index--;
-	}
-	else if ((input & BTN_VOL_UP) && menu->selected_index < menu->next_entry - 1)
-	{
-		menu->selected_index++;
-	}
-	else if (input & BTN_POWER)
-	{
-		entry = menu->entries[menu->selected_index];
-		if (entry->handler != NULL)
-		{
-            gfx_con_setpos(&g_gfx_con, 20, 50);
-			if (entry->handler(entry->param) != 0)
-				return 0;
-            gui_menu_draw(menu);
-		}
-	}
-	return 1;
+    gfx_swap_buffer(&g_gfx_ctxt);
+
+    return res;
 }
 
 int gui_menu_open(gui_menu_t *menu)
-{
+{   
+    gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
+    /* 
+     * Render and flush at first render because blocking input won't allow us 
+     * flush buffers
+     */
+    gui_menu_render_menu(menu);
+
 	while (gui_menu_update(menu))
-		;
+    ;
 
 	return 0;
 }
@@ -102,6 +126,29 @@ void gui_menu_destroy(gui_menu_t *menu)
 {
 	for (int i = 0; i < menu->next_entry; i++)
 		gui_menu_entry_destroy(menu->entries[i]);
+    custom_gui_end(menu->custom_gui);
 	free(menu->entries);
 	free(menu);
+}
+
+
+static int handle_touch_input(gui_menu_t *menu)
+{
+    gui_menu_entry_t *entry = NULL;
+    touch_event_t event = touch_wait();
+    
+    /* After touch input check if any entry has ben tapped */
+    for(u32 i = 0; i < menu->next_entry; i++)
+    {
+        entry = menu->entries[i];
+
+        if (entry->handler != NULL 
+            && is_rect_touched(&event, entry->x, entry->y, entry->width, entry->height))
+        {
+            if (entry->handler(entry->param) != 0)
+                return 0;
+        }
+    }
+
+    return 1;
 }

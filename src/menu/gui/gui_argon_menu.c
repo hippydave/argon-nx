@@ -20,55 +20,30 @@
 #include "menu/gui/gui_menu_pool.h"
 
 #include "gfx/gfx.h"
+
 #include "utils/types.h"
 #include "utils/fs_utils.h"
 #include "utils/dirlist.h"
 #include "utils/util.h"
+#include "utils/touch.h"
+
 #include "core/launcher.h"
 #include "core/payloads.h"
+#include "core/custom-gui.h"
 
 #include "mem/heap.h"
-
-#include "../logo_bmp.h"
-
-#include <string.h>
 
 #define COLUMNS 4  
 #define ROWS 2
 #define ELEM_SIZE 230
-#define MARGIN_TOP 80
+#define MARGIN_TOP 130
 #define MARGIN_LEFT 45
 
-#define MINOR_VERSION 1
-#define MAJOR_VERSION 0
-
-#define CUSTOM_BACKGROUND_PATH "argon/background.bmp"
-
-void setup_gfx_gui()
-{
-    /* Custom background*/
-    u8* custom_bg = (u8*)sd_file_read(CUSTOM_BACKGROUND_PATH);
-    if (custom_bg != NULL)
-        gfx_render_bmp_arg_bitmap(&g_gfx_ctxt, custom_bg, 0, 0, 1280, 720);
-    else 
-        gfx_clear_color(&g_gfx_ctxt, 0xFF191414);
-    
-    gfx_con_setcol(&g_gfx_con, 0xFFF9F9F9, 0, 0xFF191414);
-
-    /* Render logo */
-    u32 bmp_width = (logo_bmp[0x12] | (logo_bmp[0x13] << 8) | (logo_bmp[0x14] << 16) | (logo_bmp[0x15] << 24));
-    u32 bmp_height = (logo_bmp[0x16] | (logo_bmp[0x17] << 8) | (logo_bmp[0x18] << 16) | (logo_bmp[0x19] << 24));
-    gfx_render_bmp_arg_bitmap_transparent(&g_gfx_ctxt, (u8*)logo_bmp, 30, 10, bmp_width, bmp_height, 0);
-
-    /* Render title */
-    g_gfx_con.scale = 4;
-    // gfx_con_setpos(&g_gfx_con, 120, 20);
-        // gfx_printf(&g_gfx_con, "ArgonNX v%d.%d", MAJOR_VERSION, MINOR_VERSION);
-    gfx_render_text(&g_gfx_con, "ArgonNX v0.1", 120, 20, 500, 1);
-}
+static int tool_reboot_rcm(void* param);
+static int tool_power_off(void* param);
 
 /* Generate entries dynamically */
-void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
+static void generate_payloads_entries(char* payloads, gui_menu_t* menu)
 {
     if (payloads == NULL)
     {
@@ -98,8 +73,9 @@ void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
         u32 x = g_gfx_ctxt.width / COLUMNS * col + MARGIN_LEFT;
         u32 y = g_gfx_ctxt.height / ROWS * row + MARGIN_TOP + (row == 0 ? 30 : -60);
 
+        const char* payload_wo_bin = str_replace(&payloads[i * 256], ".bin", "");
         gui_menu_append_entry(menu, 
-            gui_create_menu_entry(&payloads[i * 256], 
+            gui_create_menu_entry(payload_wo_bin,
                                     sd_file_read(payload_logo), 
                                     x, y,
                                     200, 200,
@@ -111,8 +87,6 @@ void generate_payloads_entries(const char* payloads, gui_menu_t* menu)
 /* Init needed menus for ArgonNX */
 void gui_init_argon_menu(void)
 {
-    setup_gfx_gui();
-
     /* Init pool for menu */
     gui_menu_pool_init();
 
@@ -120,15 +94,33 @@ void gui_init_argon_menu(void)
 
     generate_payloads_entries(dirlist(PAYLOADS_DIR, "*.bin", false), menu);
 
+     gui_menu_append_entry(menu, 
+            gui_create_menu_entry_no_bitmap("Screenshot", 700, 680, 150, 100, (int (*)(void *))screenshot, NULL));
+
+    /* Generate reboot rcm and shutdown entry */
     gui_menu_append_entry(menu, 
-            gui_create_menu_entry("Power off", NULL, 900, 680, 1, 1, (int (*)(void *))power_off, NULL));
+            gui_create_menu_entry_no_bitmap("Power off", 900, 680, 150, 100, tool_power_off, NULL));
 
     gui_menu_append_entry(menu, 
-            gui_create_menu_entry("Reboot RCM", NULL, 1100, 680, 1, 1, (int (*)(void *))reboot_rcm, NULL));
+            gui_create_menu_entry_no_bitmap("Reboot RCM", 1100, 680, 150, 100, tool_reboot_rcm, NULL));
 
-
+    /* Start menu */
     gui_menu_open(menu);
 
     /* Clear all entries and menus */
     gui_menu_pool_cleanup();
+}
+
+static int tool_reboot_rcm(void* param)
+{
+    gui_menu_pool_cleanup();
+    reboot_rcm();
+    return 0;
+}
+
+static int tool_power_off(void* param)
+{
+    gui_menu_pool_cleanup();
+    power_off();
+    return 0;
 }

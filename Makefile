@@ -6,7 +6,7 @@ include $(DEVKITARM)/base_rules
 
 TARGET 					:= argon-nx
 BLVERSION_MAJOR := 0
-BLVERSION_MINOR := 1
+BLVERSION_MINOR := 3
 BUILD 					:= build
 OUTPUT 					:= output
 SOURCEDIR 			:= src
@@ -25,9 +25,9 @@ SOURCES		      := src \
 										src/soc \
 										src/storage \
 										src/utils
+
 INCLUDES				:= include
 VPATH = $(dir $(wildcard ./$(SOURCEDIR)/*/)) $(dir $(wildcard ./$(SOURCEDIR)/*/*/))
-
 CFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 SFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 BINFILES		:=  $(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
