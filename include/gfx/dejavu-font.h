@@ -2,7 +2,10 @@
 
 /* Start of automatically generated font definition for DejaVuSans12. */
 
+#ifndef _DEJAVU_H_
+#define _DEJAVU_H_
 
+#include "gfx/gfx.h"
 #include "libs/mcufont/mf_rlefont.h"
 
 static const uint8_t mf_rlefont_DejaVuSans12_dictionary_data[965] PROGMEM = {
@@ -376,8 +379,8 @@ const struct mf_rlefont_s dejavu = {
     {
     "DejaVu Sans Book 12",
     "DejaVuSans12",
-    13, /* width */
-    15, /* height */
+    DEJAVU_WIDTH, /* width */
+    DEJAVU_HEIGHT, /* height */
     3, /* min x advance */
     12, /* max x advance */
     1, /* baseline x */
@@ -400,3 +403,4 @@ const struct mf_rlefont_s dejavu = {
 
 /* End of automatically generated font definition for DejaVuSans12. */
 
+#endif

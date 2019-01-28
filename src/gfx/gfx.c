@@ -467,6 +467,20 @@ void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, u32 color)
     }
 }
 
+void gfx_set_rect_text(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
+{
+    u32 pos = 0;
+    for (u32 y = pos_y; y < (pos_y + size_y); y++)
+    {
+        for (u32 x = pos_x; x < (pos_x + size_x); x++)
+        {
+            if (buf[pos] > 0) 
+                memset(&ctxt->next[y + (ctxt->width - x) * ctxt->stride], buf[pos], 4);
+            pos++;
+        }
+    }
+}
+
 void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
 {
     u32 pos = 0;
@@ -632,4 +646,31 @@ void gfx_render_splash(gfx_ctxt_t *ctxt, u8 *bitmap)
 
     }
     free(image);
+}
+
+
+void gfx_render_button(gfx_con_t *con, const char* text, u32 color, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y)
+{
+    gfx_ctxt_t* ctxt = con->gfx_ctxt;
+
+     // Draw a gray rect
+    for (u32 y = pos_y; y < (pos_y + size_y); y++)
+    {
+        for (u32 x = pos_x; x < (pos_x + size_x); x++)
+        {
+            gfx_set_pixel(ctxt, x, y, color);
+        }
+    }
+
+    // Button borders
+    gfx_line(ctxt, pos_x, pos_y, pos_x + size_x, pos_y, 0xFFFFFFFF);
+    gfx_line(ctxt, pos_x, pos_y, pos_x, pos_y + size_y, 0xFFFFFFFF);
+    gfx_line(ctxt, pos_x, pos_y + size_y, pos_x + size_x, pos_y + size_y, 0xFFFFFFFF);
+    gfx_line(ctxt, pos_x + size_x, pos_y, pos_x + size_x, pos_y + size_y, 0xFFFFFFFF);
+
+    // Vertical alignment
+    u32 y_offset = (size_y / 2) - (u32)DEJAVU_HEIGHT;    
+    
+    // Draw text
+    gfx_render_text(con, (char*)text, pos_x, pos_y + y_offset, size_x, true);
 }

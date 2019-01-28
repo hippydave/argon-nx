@@ -94,15 +94,18 @@ void gui_init_argon_menu(void)
 
     generate_payloads_entries(dirlist(PAYLOADS_DIR, "*.bin", false), menu);
 
-     gui_menu_append_entry(menu, 
-            gui_create_menu_entry_no_bitmap("Screenshot", 700, 680, 150, 100, (int (*)(void *))screenshot, NULL));
+    u32 controls_y = 650;
+    u32 controls_width = 200;
+
+    gui_menu_append_entry(menu, 
+            gui_create_menu_entry_no_bitmap("Screenshot", 500, controls_y, controls_width, 50, (int (*)(void *))screenshot, NULL));
 
     /* Generate reboot rcm and shutdown entry */
     gui_menu_append_entry(menu, 
-            gui_create_menu_entry_no_bitmap("Power off", 900, 680, 150, 100, tool_power_off, NULL));
+            gui_create_menu_entry_no_bitmap("Power off", 750, controls_y, controls_width, 50, tool_power_off, NULL));
 
     gui_menu_append_entry(menu, 
-            gui_create_menu_entry_no_bitmap("Reboot RCM", 1100, 680, 150, 100, tool_reboot_rcm, NULL));
+            gui_create_menu_entry_no_bitmap("Reboot RCM", 1000, controls_y, controls_width, 50, tool_reboot_rcm, NULL));
 
     /* Start menu */
     gui_menu_open(menu);

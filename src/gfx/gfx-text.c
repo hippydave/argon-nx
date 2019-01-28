@@ -130,9 +130,9 @@ void gfx_render_text(gfx_con_t *con, char* text, u32 x, u32 y, u32 width, bool l
 
     /* TODO: Custom state */
     /* Init state and allocate and clear the image buffer */
-    state.alignment = MF_ALIGN_LEFT;
-    state.margin = x;
-    state.anchor = state.margin;
+    state.alignment = MF_ALIGN_CENTER;
+    state.margin = 0;
+    state.anchor = width / 2;
     state.width = width;
     state.height = height;
     state.buffer = malloc(width * height);
@@ -145,8 +145,8 @@ void gfx_render_text(gfx_con_t *con, char* text, u32 x, u32 y, u32 width, bool l
     memset(state.buffer, 0, width * height);
     
     /* Render the text */
-    mf_wordwrap(font, width - 2 * state.margin, text, line_callback, &state);
-    gfx_set_rect_grey(&g_gfx_ctxt, state.buffer, state.width, state.height, 10, 10);
+    mf_wordwrap(font, width, text, line_callback, &state);
+    gfx_set_rect_text(&g_gfx_ctxt, state.buffer, state.width, state.height, x, y);
     free(state.buffer);
 }
 

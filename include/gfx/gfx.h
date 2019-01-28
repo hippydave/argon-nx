@@ -33,6 +33,9 @@
 #define CHAR_WIDTH 8
 #define CHAR_HEIGHT 8
 
+#define DEJAVU_WIDTH 13
+#define DEJAVU_HEIGHT 15
+
 typedef struct _gfx_ctxt_t
 {
 	u32 *fb;
@@ -95,6 +98,7 @@ void gfx_line(gfx_ctxt_t *ctxt, int x0, int y0, int x1, int y1, u32 color);
 void gfx_put_small_sep(gfx_con_t *con);
 void gfx_put_big_sep(gfx_con_t *con);
 void gfx_set_rect_grey(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y);
+void gfx_set_rect_text(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y);
 void gfx_set_rect_rgb(gfx_ctxt_t *ctxt, const u8 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y);
 void gfx_set_rect_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y);
 void gfx_render_bmp_argb(gfx_ctxt_t *ctxt, const u32 *buf, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y);
@@ -103,6 +107,7 @@ void gfx_render_bmp_arg_bitmap(gfx_ctxt_t *ctxt, u8* bitmap, u32 x, u32 y, u32 w
 void gfx_render_bmp_arg_bitmap_transparent(gfx_ctxt_t *ctxt, u8* bitmap, u32 x, u32 y, u32 width, u32 height, u32 transparent_color);
 void gfx_render_bmp_arg_file(gfx_ctxt_t *ctxt, char *path, u32 x, u32 y, u32 width, u32 height);
 void gfx_render_splash(gfx_ctxt_t *ctxt, u8 *bitmap);
+void gfx_render_button(gfx_con_t *con, const char* text, u32 color, u32 size_x, u32 size_y, u32 pos_x, u32 pos_y);
 
 void gfx_render_text(gfx_con_t *con, char* text, u32 x, u32 y, u32 width, bool light);
 
