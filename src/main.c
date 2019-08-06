@@ -77,8 +77,8 @@ void ipl_main()
         bool cancel_auto_chainloading = btn_read() & BTN_VOL_DOWN;
         bool load_menu = cancel_auto_chainloading || launch_payload("argon/payload.bin");
         
-        gfx_printf(&g_gfx_con, "Autochainload canceled. Loading menu...\n");
-        gfx_swap_buffer(&g_gfx_ctxt);
+        //gfx_printf(&g_gfx_con, "Autochainload canceled. Loading menu...\n");
+        //gfx_swap_buffer(&g_gfx_ctxt);
 
         if (load_menu)
             gui_init_argon_menu();
