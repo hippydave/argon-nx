@@ -94,7 +94,7 @@ void gui_init_argon_menu(void)
 
     generate_payloads_entries(dirlist(PAYLOADS_DIR, "*.bin", false), menu);
 
-     gui_menu_append_entry(menu, 
+    if (g_ss_enabled) gui_menu_append_entry(menu,
             gui_create_menu_entry_no_bitmap("Screenshot", 700, 680, 150, 100, (int (*)(void *))screenshot, NULL));
 
     /* Generate reboot rcm and shutdown entry */

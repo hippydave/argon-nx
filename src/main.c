@@ -35,6 +35,7 @@
 #include "minerva/minerva.h"
 
 #define PATH_ENABLE_TOUCH "argon/touch"
+#define PATH_DISABLE_SS "argon/noss"
 
 extern void pivot_stack(u32 stack_top);
 
@@ -79,6 +80,8 @@ void ipl_main()
         
         //gfx_printf(&g_gfx_con, "Autochainload canceled. Loading menu...\n");
         //gfx_swap_buffer(&g_gfx_ctxt);
+
+        g_ss_enabled = !sd_file_exists(PATH_DISABLE_SS);
 
         if (load_menu)
             gui_init_argon_menu();

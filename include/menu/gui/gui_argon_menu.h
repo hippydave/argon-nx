@@ -17,6 +17,10 @@
 #ifndef _GUI_ARGON_MENU_H_
 #define _GUI_ARGON_MENU_H_
 
+#include "utils/types.h"
+
+bool g_ss_enabled;
+
 /* Init needed menus for ArgonNX */
 void gui_init_argon_menu(void);
 
